@@ -11,7 +11,7 @@ jobs:
     name: Build PostgreSQL Docker Image
     runs-on: ubuntu-latest
     outputs:
-      is_build_successful: ${{ steps.build_image.outcome }}
+      is_build_successful: ${{ steps.set_build_status.outputs.is_build_successful }}
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -34,13 +34,18 @@ jobs:
       continue-on-error: true # Permite continuar incluso si hay errores
 
     - name: Set Build Status
-      id: build_status
-      run: echo "is_build_successful=${{ steps.build_image.outcome }}" >> $GITHUB_ENV
+      id: set_build_status
+      run: |
+        if [ "${{ steps.build_image.outcome }}" == "success" ]; then
+          echo "is_build_successful=true" >> $GITHUB_ENV
+        else
+          echo "is_build_successful=false" >> $GITHUB_ENV
+        fi
 
   push-postgres-image:
     name: Push PostgreSQL Docker Image to Docker Hub
     needs: build-postgres-image
-    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'success' }}
+    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Login to Docker Hub
