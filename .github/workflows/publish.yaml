@@ -29,7 +29,7 @@ jobs:
         context: .
         file: ./Dockerfile
         platforms: linux/amd64,linux/arm64
-      continue-on-error: true # Permite continuar incluso si hay errores
+        push: false # Cambiado a false ya que solo estamos construyendo la imagen
 
     - name: Set Build Status
       id: set_build_status
