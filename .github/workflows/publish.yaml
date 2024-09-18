@@ -1,0 +1,72 @@
+name: Build and Publish PostgreSQL Docker Image
+
+on:
+  release:
+    types:
+    - created
+    - edited
+
+jobs:
+  build-postgres-image:
+    name: Build PostgreSQL Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Build Docker Image
+      id: build_image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: false
+        tags: ${{ secrets.DOCKER_REPO_POSTGRES }}:latest
+
+  push-postgres-image:
+    name: Push PostgreSQL Docker Image to Docker Hub
+    needs: build-postgres-image
+    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+
+    - name: Push Docker Image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_REPO_POSTGRES }}:latest
+          ${{ secrets.DOCKER_REPO_POSTGRES }}:${{ github.event.release.tag_name }}
+
+  check-docker-secrets:
+    name: Check Docker Hub Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      is_have_secrets: ${{ steps.check_secret_job.outputs.is_have_secrets }}
+    steps:
+    - id: check_secret_job
+      run: |
+        if [[ "${{ secrets.DOCKER_REPO_POSTGRES }}" != "" && \
+              "${{ secrets.DOCKER_USERNAME }}" != "" && \
+              "${{ secrets.DOCKER_TOKEN }}" != "" ]]; then
+          echo "Secrets to use a container registry are configured in the repo"
+          echo "is_have_secrets=true" >> $GITHUB_OUTPUT
+        else
+          echo "Secrets to use a container registry were not configured in the repo"
+          echo "is_have_secrets=false" >> $GITHUB_OUTPUT
+        fi
