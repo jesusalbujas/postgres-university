@@ -40,28 +40,10 @@ jobs:
           echo "is_build_successful=false" >> $GITHUB_ENV
         fi
 
-  check-docker-secrets:
-    name: Check Docker Hub Secrets
-    runs-on: ubuntu-latest
-    outputs:
-      is_have_secrets: ${{ steps.check_secret_job.outputs.is_have_secrets }}
-    steps:
-    - id: check_secret_job
-      run: |
-        if [[ "${{ secrets.DOCKER_REPO_POSTGRES }}" != "" && \
-              "${{ secrets.DOCKER_USERNAME }}" != "" && \
-              "${{ secrets.DOCKER_TOKEN }}" != "" ]]; then
-          echo "Secrets to use a container registry are configured in the repo"
-          echo "is_have_secrets=true" >> $GITHUB_OUTPUT
-        else
-          echo "Secrets to use a container registry were not configured in the repo"
-          echo "is_have_secrets=false" >> $GITHUB_OUTPUT
-        fi
-
   push-postgres-image:
     name: Push PostgreSQL Docker Image to Docker Hub
-    needs: [build-postgres-image, check-docker-secrets]
-    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'true' && needs.check-docker-secrets.outputs.is_have_secrets == 'true' }}
+    needs: build-postgres-image
+    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'true'}}
     runs-on: ubuntu-latest
     steps:
     - name: Login to Docker Hub
