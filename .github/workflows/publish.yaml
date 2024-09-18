@@ -10,7 +10,6 @@ jobs:
   push-postgres-image:
     name: Push PostgreSQL Docker Image to Docker Hub
     needs: build-postgres-image
-    if: ${{ needs.build-postgres-image.outputs.is_build_successful == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Login to Docker Hub
