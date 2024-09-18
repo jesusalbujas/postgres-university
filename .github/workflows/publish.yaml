@@ -9,6 +9,7 @@ on:
 jobs:
   push-postgres-image:
     name: Push PostgreSQL Docker Image to Docker Hub
+    if: needs.check-secrets.outputs.docker_repo_postgres != ''
     runs-on: ubuntu-latest
     steps:
     - name: Login to Docker Hub
@@ -22,7 +23,7 @@ jobs:
       with:
         context: .
         file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         push: true
         tags: |
           ${{ secrets.DOCKER_REPO_POSTGRES }}:latest
