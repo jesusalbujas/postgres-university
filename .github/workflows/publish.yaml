@@ -7,25 +7,6 @@ on:
     - edited
 
 jobs:
-  check-docker-secrets:
-    name: Check Docker Hub Secrets
-    runs-on: ubuntu-latest
-    outputs:
-      is_have_secrets: ${{ steps.check_secret_job.outputs.is_have_secrets }}
-    steps:
-    - id: check_secret_job
-      run: |
-        echo "DOCKER_REPO_POSTGRES=${{ secrets.DOCKER_REPO_POSTGRES }}"
-        if [[ "${{ secrets.DOCKER_REPO_POSTGRES }}" != "" && \
-              "${{ secrets.DOCKER_USERNAME }}" != "" && \
-              "${{ secrets.DOCKER_TOKEN }}" != "" ]]; then
-          echo "Secrets to use a container registry are configured in the repo"
-          echo "is_have_secrets=true" >> $GITHUB_OUTPUT
-        else
-          echo "Secrets to use a container registry were not configured in the repo"
-          echo "is_have_secrets=false" >> $GITHUB_OUTPUT
-        fi
-
   build-postgres-image:
     name: Build PostgreSQL Docker Image
     needs: check-docker-secrets
@@ -73,3 +54,22 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_REPO_POSTGRES }}:latest
           ${{ secrets.DOCKER_REPO_POSTGRES }}:${{ github.event.release.tag_name }}
+
+  check-docker-secrets:
+    name: Check Docker Hub Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      is_have_secrets: ${{ steps.check_secret_job.outputs.is_have_secrets }}
+    steps:
+    - id: check_secret_job
+      run: |
+        echo "DOCKER_REPO_POSTGRES=${{ secrets.DOCKER_REPO_POSTGRES }}"
+        if [[ "${{ secrets.DOCKER_REPO_POSTGRES }}" != "" && \
+              "${{ secrets.DOCKER_USERNAME }}" != "" && \
+              "${{ secrets.DOCKER_TOKEN }}" != "" ]]; then
+          echo "Secrets to use a container registry are configured in the repo"
+          echo "is_have_secrets=true" >> $GITHUB_OUTPUT
+        else
+          echo "Secrets to use a container registry were not configured in the repo"
+          echo "is_have_secrets=false" >> $GITHUB_OUTPUT
+        fi
