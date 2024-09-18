@@ -9,8 +9,6 @@ on:
 jobs:
   build-postgres-image:
     name: Build PostgreSQL Docker Image
-    needs: check-docker-secrets
-    if: ${{ needs.check-docker-secrets.outputs.is_have_secrets == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
@@ -63,7 +61,6 @@ jobs:
     steps:
     - id: check_secret_job
       run: |
-        echo "DOCKER_REPO_POSTGRES=${{ secrets.DOCKER_REPO_POSTGRES }}"
         if [[ "${{ secrets.DOCKER_REPO_POSTGRES }}" != "" && \
               "${{ secrets.DOCKER_USERNAME }}" != "" && \
               "${{ secrets.DOCKER_TOKEN }}" != "" ]]; then
