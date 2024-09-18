@@ -29,8 +29,6 @@ jobs:
         context: .
         file: ./Dockerfile
         platforms: linux/amd64,linux/arm64
-        push: false
-        tags: ${{ secrets.DOCKER_REPO_POSTGRES }}:latest
       continue-on-error: true # Permite continuar incluso si hay errores
 
     - name: Set Build Status
