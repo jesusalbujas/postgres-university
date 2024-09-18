@@ -7,39 +7,6 @@ on:
     - edited
 
 jobs:
-  build-postgres-image:
-    name: Build PostgreSQL Docker Image
-    runs-on: ubuntu-latest
-    outputs:
-      is_build_successful: ${{ steps.set_build_status.outputs.is_build_successful }}
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-
-    - name: Build Docker Image
-      id: build_image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64
-        push: false # Cambiado a false ya que solo estamos construyendo la imagen
-
-    - name: Set Build Status
-      id: set_build_status
-      run: |
-        if [ "${{ steps.build_image.outcome }}" == "success" ]; then
-          echo "is_build_successful=true" >> $GITHUB_ENV
-        else
-          echo "is_build_successful=false" >> $GITHUB_ENV
-        fi
-
   push-postgres-image:
     name: Push PostgreSQL Docker Image to Docker Hub
     needs: build-postgres-image
